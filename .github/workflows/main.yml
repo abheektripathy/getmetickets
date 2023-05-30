@@ -1,0 +1,30 @@
+name: Flight Scraper
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  scrape_and_email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 tabulate
+          pip install yagmail
+
+      - name: Run script and send email
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: |
+          python flight_scraper.py --from DEL --to BLR --date 2023-06-30 | mail -s "Flight Details" -a "Content-Type: text/html" $EMAIL
